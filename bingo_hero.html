@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bingo 75 — Hero vs Villains</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: radial-gradient(ellipse at 60% 40%, #e040a0 0%, #b224e8 40%, #7b1fa2 70%, #4a148c 100%);
+  min-height: 100vh;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── TOP BAR ─── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 46px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+  gap: 12px;
+  color: white;
+}
+.tb-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tb-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+.tb-sep { width: 1px; height: 26px; background: rgba(255,255,255,0.2); margin: 0 6px; }
+.tb-icon { font-size: 16px; }
+.tb-val {
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+}
+.tb-spacer { flex: 1; }
+.ball-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+}
+.current-ball-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  margin: -4px 0;
+}
+.current-ball {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4), inset 0 -3px 6px rgba(0,0,0,0.2), inset 0 3px 6px rgba(255,255,255,0.3);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.current-ball::before {
+  content: '';
+  position: absolute;
+  top: 6px; left: 12px;
+  width: 14px; height: 8px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 50%;
+  transform: rotate(-20deg);
+}
+.ball-l { font-size: 10px; line-height: 1; opacity: 0.8; }
+.ball-n { font-size: 20px; line-height: 1; }
+.ball-B { background: radial-gradient(circle at 40% 35%, #5dbaff, #1565c0); color: white; }
+.ball-I { background: radial-gradient(circle at 40% 35%, #ffd54f, #e65100); color: white; }
+.ball-N { background: radial-gradient(circle at 40% 35%, #81c784, #1b5e20); color: white; }
+.ball-G { background: radial-gradient(circle at 40% 35%, #ef9a9a, #b71c1c); color: white; }
+.ball-O { background: radial-gradient(circle at 40% 35%, #ce93d8, #4a148c); color: white; }
+.ball-empty { background: rgba(255,255,255,0.15); border: 2px dashed rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); font-size: 20px; }
+.ball-anim { animation: ballPop 0.35s cubic-bezier(.34,1.56,.64,1); }
+@keyframes ballPop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.counter-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  white-space: nowrap;
+}
+.counter-text span { color: #ffd54f; font-size: 18px; }
+
+.draw-btn {
+  height: 34px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #ffd54f, #ff9800);
+  border: none;
+  border-radius: 20px;
+  color: #1a0a00;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 3px 12px rgba(255,152,0,0.4);
+  letter-spacing: 0.5px;
+}
+.draw-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(255,152,0,0.55); }
+.draw-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.auto-btn {
+  height: 34px;
+  padding: 0 14px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.auto-btn.on { background: rgba(0,230,118,0.25); border-color: #00e676; color: #00e676; }
+
+/* ─── MAIN AREA ─── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ─── LEFT: VILLAINS ─── */
+.left-panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 8px;
+  gap: 8px;
+}
+.panel-header {
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  padding: 0 4px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.villain-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.3s;
+}
+.villain-card.danger { border-color: rgba(255,100,100,0.6); }
+
+.vill-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.vill-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  position: relative;
+}
+.vill-avatar .lvl {
+  position: absolute;
+  top: -4px; left: -4px;
+  background: #e040a0;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.vill-info { flex: 1; min-width: 0; }
+.vill-name {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vill-bet {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffd54f;
+}
+
+
+/* Mini card in villain block */
+.mini-card-wrap {
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  padding: 4px;
+}
+.mini-card {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+}
+.mc-header {
+  height: 14px;
+  border-radius: 2px 2px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 8px;
+  font-weight: 900;
+  color: white;
+}
+.mc-hB { background: #1565c0; }
+.mc-hI { background: #e65100; }
+.mc-hN { background: #1b5e20; }
+.mc-hG { background: #b71c1c; }
+.mc-hO { background: #4a148c; }
+.mc-cell {
+  height: 18px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 7.5px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  transition: all 0.25s;
+}
+.mc-cell.daubed { background: #e040a0; color: white; }
+.mc-cell.xpat { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.4); outline: 1px solid rgba(255,100,180,0.4); }
+.mc-cell.xpat.daubed { background: #e040a0; outline: none; }
+.mc-cell.free { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 6px; letter-spacing: 0.3px; }
+.mc-cell.win-cell { background: #00c853 !important; color: white !important; }
+
+/* ─── RIGHT: HERO CARDS ─── */
+.right-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.kupony-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hero-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+/* Per-color CSS variables for X-pattern border and daubed bg */
+.rc-green  { --rc-bg:#2e7d32; --rc-light:#a5d6a7; --rc-text:#fff; --rc-footer-bg:#388e3c; --xborder:#66bb6a; --xbg:#388e3c; }
+.rc-blue   { --rc-bg:#1565c0; --rc-light:#90caf9; --rc-text:#fff; --rc-footer-bg:#1976d2; --xborder:#42a5f5; --xbg:#1976d2; }
+.rc-yellow { --rc-bg:#f9a825; --rc-light:#fff176; --rc-text:#4a3000; --rc-footer-bg:#fbc02d; --xborder:#fdd835; --xbg:#f9a825; }
+.rc-red    { --rc-bg:#c62828; --rc-light:#ef9a9a; --rc-text:#fff; --rc-footer-bg:#d32f2f; --xborder:#ef5350; --xbg:#d32f2f; }
+.rc-pink   { --rc-bg:#ad1457; --rc-light:#f48fb1; --rc-text:#fff; --rc-footer-bg:#c2185b; --xborder:#f06292; --xbg:#c2185b; }
+
+/* Hero bingo card */
+.hero-card {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.4s;
+  position: relative;
+  background: var(--rc-bg, #2e7d32);
+}
+.hero-card.best {
+  border-color: #ffd54f;
+  box-shadow: 0 0 16px rgba(255,213,79,0.6);
+}
+.hero-card.won-card {
+  border-color: #ff80ab !important;
+  box-shadow: 0 0 28px rgba(255,64,129,0.9) !important;
+  background: #ff1493 !important;
+  animation: cardWon 0.7s ease infinite alternate;
+}
+.hero-card.won-card .hc-footer { background: #e91e8c !important; }
+.hero-card.won-card .hc-cell.xpat-cell { border-color: #ffb3d1 !important; background: white !important; color: #ff1493 !important; }
+.hero-card.won-card .hc-cell.daubed.xpat-cell { background: #ff69b4 !important; color: white !important; border-color: transparent !important; }
+.hero-card.won-card .hc-cell.win-cell { background: white !important; color: #ff1493 !important; }
+.hero-card.won-card .hc-cell:not(.xpat-cell):not(.free) { background: #c71585 !important; color: #ffb3d1 !important; }
+@keyframes cardWon { from { box-shadow: 0 0 18px rgba(255,20,147,0.7); } to { box-shadow: 0 0 44px rgba(255,105,180,1); } }
+
+.hc-grid-wrap {
+  padding: 3px 3px 0;
+}
+
+.hc-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+}
+/* Base: inactive cell — medium-dark grey bg, grey number */
+.hc-cell {
+  height: 26px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #9e9e9e;
+  color: #424242;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  position: relative;
+  border: 1.5px solid transparent;
+}
+/* X-pattern cell before draw: white bg, black text, colored border */
+.hc-cell.xpat-cell {
+  background: #ffffff;
+  color: #111;
+  font-weight: 800;
+  border-color: var(--xborder, #388e3c);
+}
+/* FREE center: animated pulse, no text */
+.hc-cell.free {
+  background: transparent;
+  border: none;
+  font-size: 0;
+  animation: freePulse 2s ease-in-out infinite;
+}
+@keyframes freePulse {
+  0%,100% { background: rgba(180,180,180,0.25); }
+  50%      { background: rgba(180,180,180,0.55); }
+}
+/* Daubed inactive cell: stays same grey */
+.hc-cell.daubed:not(.xpat-cell) {
+  background: #9e9e9e;
+  color: #424242;
+}
+/* Daubed X-pattern: card background color, white number */
+.hc-cell.daubed.xpat-cell {
+  background: var(--xbg, #388e3c);
+  color: #ffffff;
+  border-color: transparent;
+  font-weight: 900;
+}
+.hc-cell.win-cell {
+  background: #00c853 !important;
+  color: white !important;
+  border-color: transparent !important;
+  animation: cellWin 0.4s ease;
+}
+@keyframes cellWin { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.hc-cell.just-hit {
+  animation: justHit 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes justHit {
+  0%   { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+.hc-footer {
+  padding: 4px 4px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rc-footer-bg, #388e3c);
+}
+.remains-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+}
+.remains-badge span { font-size: 12px; color: white; font-weight: 900; }
+
+/* Villain remains badge — inline color */
+.vill-remains {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  margin-top: 3px;
+  transition: background 0.4s;
+}
+.vill-remains span { font-size: 14px; font-weight: 900; }
+
+
+
+/* FREE cell color-aware pulse */
+.rc-green  .hc-cell.free { animation: freePulseGreen  2s ease-in-out infinite; }
+.rc-blue   .hc-cell.free { animation: freePulseBlue   2s ease-in-out infinite; }
+.rc-yellow .hc-cell.free { animation: freePulseYellow 2s ease-in-out infinite; }
+.rc-red    .hc-cell.free { animation: freePulseRed    2s ease-in-out infinite; }
+.rc-pink   .hc-cell.free { animation: freePulsePink   2s ease-in-out infinite; }
+@keyframes freePulseGreen  { 0%,100%{background:rgba(102,187,106,0.15)}  50%{background:rgba(102,187,106,0.55)} }
+@keyframes freePulseBlue   { 0%,100%{background:rgba(66,165,245,0.15)}   50%{background:rgba(66,165,245,0.55)} }
+@keyframes freePulseYellow { 0%,100%{background:rgba(253,216,53,0.2)}    50%{background:rgba(253,216,53,0.65)} }
+@keyframes freePulseRed    { 0%,100%{background:rgba(239,83,80,0.15)}    50%{background:rgba(239,83,80,0.55)} }
+@keyframes freePulsePink   { 0%,100%{background:rgba(240,98,146,0.15)}   50%{background:rgba(240,98,146,0.55)} }
+#bingo-btn-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+#bingo-btn {
+  padding: 0 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #ffd54f 0%, #ff9800 50%, #e040a0 100%);
+  border: none;
+  border-radius: 28px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 4px;
+  cursor: not-allowed;
+  opacity: 0.3;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: opacity 0.4s;
+}
+#bingo-btn.active {
+  cursor: pointer;
+  opacity: 1;
+  box-shadow: 0 6px 32px rgba(255,152,0,0.6);
+  animation: bingoPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes bingoPulse {
+  from { transform: scale(1);    box-shadow: 0 6px 32px rgba(255,152,0,0.5), 0 0 0 0   rgba(255,213,79,0.6); }
+  to   { transform: scale(1.05); box-shadow: 0 8px 48px rgba(255,152,0,0.8), 0 0 0 14px rgba(255,213,79,0); }
+}
+
+/* ─── WIN OVERLAY ─── */
+#win-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,4,30,0.92);
+  backdrop-filter: blur(10px);
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 24px 16px 32px;
+}
+#win-overlay.show { display: flex; }
+
+.win-inner {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* FANFARE section */
+.win-fanfare {
+  background: linear-gradient(135deg, #1a0040 0%, #2d0060 100%);
+  border: 2px solid #ffd54f;
+  border-radius: 24px;
+  padding: 36px 40px 28px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255,213,79,0.3), 0 20px 60px rgba(0,0,0,0.5);
+  animation: fanfareIn 0.6s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes fanfareIn { from { transform: scale(0.7) translateY(-40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.win-fanfare::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, #ffd54f,#e040a0,#00e676,#00d4ff,#ffd54f);
+  background-size: 400% 100%;
+  animation: borderRun 3s linear infinite;
+  border-radius: 24px;
+  z-index: -1;
+}
+@keyframes borderRun { to { background-position: 400% 0; } }
+
+.win-trophy { font-size: 80px; display: block; animation: trophyBounce 0.6s cubic-bezier(.34,1.56,.64,1) 0.3s both; }
+@keyframes trophyBounce { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+.win-heading {
+  font-family: 'Nunito', sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffd54f, #ff9800, #e040a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin: 8px 0 4px;
+  animation: headingIn 0.5s ease 0.5s both;
+}
+@keyframes headingIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.win-tagline { font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 20px; }
+.win-meta { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; color: #ffd54f; }
+
+/* RESULTS section */
+.win-results {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 20px 24px;
+}
+.win-results-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.results-table { display: flex; flex-direction: column; gap: 8px; }
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+}
+.result-row.hero-row { background: rgba(255,213,79,0.12); border: 1px solid rgba(255,213,79,0.3); }
+.result-pos { font-family:'Nunito',sans-serif; font-size:20px; font-weight:900; width:28px; text-align:center; flex-shrink:0; }
+.result-pos.p1{color:#ffd54f} .result-pos.p2{color:#90caf9} .result-pos.p3{color:#ce93d8} .result-pos.pn{color:rgba(255,255,255,0.3)}
+.result-avatar { font-size:22px; flex-shrink:0; }
+.result-name { flex:1; font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; color:white; }
+.result-rem {
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
+  padding: 3px 12px; border-radius:12px; flex-shrink:0;
+}
+
+/* BALL SEQUENCE */
+.win-balls {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 20px 24px;
+}
+.win-balls-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.balls-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.seq-ball {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 10px;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  position: relative;
+}
+.seq-ball::before {
+  content:'';position:absolute;top:4px;left:7px;width:8px;height:5px;
+  background:rgba(255,255,255,0.3);border-radius:50%;transform:rotate(-20deg);
+}
+.seq-ball.sb-B{background:radial-gradient(circle at 40% 35%,#5dbaff,#1565c0)}
+.seq-ball.sb-I{background:radial-gradient(circle at 40% 35%,#ffd54f,#e65100)}
+.seq-ball.sb-N{background:radial-gradient(circle at 40% 35%,#81c784,#1b5e20)}
+.seq-ball.sb-G{background:radial-gradient(circle at 40% 35%,#ef9a9a,#b71c1c)}
+.seq-ball.sb-O{background:radial-gradient(circle at 40% 35%,#ce93d8,#4a148c)}
+.seq-ball.winning-ball { outline: 2px solid #ffd54f; box-shadow: 0 0 10px rgba(255,213,79,0.6); }
+
+.win-action-btns { display: flex; gap: 12px; }
+.wbtn {
+  flex:1; height:50px; border-radius:14px; border:none;
+  font-family:'Nunito',sans-serif; font-size:16px; font-weight:900;
+  cursor:pointer; transition:all 0.2s;
+}
+.wbtn.primary { background:linear-gradient(135deg,#e040a0,#9c27b0); color:white; box-shadow:0 4px 20px rgba(224,64,160,0.4); }
+.wbtn.secondary { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); }
+.wbtn.csv { background:linear-gradient(135deg,#00897b,#00695c); color:white; box-shadow:0 4px 16px rgba(0,137,123,0.4); }
+.wbtn:hover { transform:translateY(-2px); }
+
+/* confetti */
+.confetti-wrap { position:fixed; inset:0; pointer-events:none; z-index:1001; overflow:hidden; }
+.cp { position:absolute; top:-14px; border-radius:2px; animation:cpFall linear forwards; }
+@keyframes cpFall { to { transform:translateY(105vh) rotate(600deg); opacity:0; } }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+/* bottom bar */
+.bottom-bar {
+  height: 36px;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.stars-wrap { display: flex; gap: 4px; }
+.star { font-size: 18px; opacity: 0.25; transition: opacity 0.5s; }
+.star.lit { opacity: 1; }
+.progress-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd54f, #ff9800);
+  border-radius: 4px;
+  transition: width 0.5s;
+  width: 0%;
+}
+.bb-counter {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bb-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1565c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="tb-section">
+    <span class="tb-label">GRACZE</span>
+    <span class="tb-icon">👥</span>
+    <span class="tb-val">4</span>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="ball-display">
+    <div class="current-ball ball-empty" id="cur-ball">
+      <span class="ball-l" id="cur-l"></span>
+      <span class="ball-n" id="cur-n">?</span>
+    </div>
+    <div class="counter-text">Wylosowano: <span id="drawn-cnt">0</span>/75</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-section" style="gap:10px">
+    <button class="draw-btn" id="draw-btn" onclick="drawBall()">LOSUJ</button>
+    <button class="auto-btn" id="auto-btn" onclick="toggleAuto()">AUTO ▶</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-section">
+    <span class="tb-label">KUPONY</span>
+    <span class="tb-icon">🎟️</span>
+    <span class="tb-val" style="color:#ffd54f">20</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: VILLAINS -->
+  <div class="left-panel">
+    <div class="panel-header">⚔️ GRACZE</div>
+    <div id="villains-container"></div>
+  </div>
+
+  <!-- RIGHT: HERO CARDS -->
+  <div class="right-panel">
+    <div class="right-header">
+      <div class="kupony-label">🎟️ TWOJE KUPONY — posortowane według szansy</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,0.6)">
+        Pattern: <span style="color:#ffd54f">Skrzyżowanie X</span>
+      </div>
+    </div>
+    <div class="hero-cards-grid" id="hero-grid"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="stars-wrap" id="stars">
+    <span class="star">⭐</span>
+    <span class="star">⭐</span>
+    <span class="star">⭐</span>
+    <span class="star">⭐</span>
+    <span class="star">⭐</span>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-fill"></div></div>
+  <div class="bb-counter">
+    <span id="bot-cnt">0/75</span>
+    <div class="bb-icon" id="bot-ball">B</div>
+  </div>
+</div>
+
+<!-- BINGO BUTTON — always visible, activates on win -->
+<div id="bingo-btn-wrap">
+  <button id="bingo-btn" onclick="claimBingo()">🎉 BINGO!</button>
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="win-overlay">
+  <div class="confetti-wrap" id="confetti-wrap"></div>
+  <div class="win-inner">
+
+    <!-- FANFARE -->
+    <div class="win-fanfare">
+      <span class="win-trophy">🏆</span>
+      <div class="win-heading">BINGO!</div>
+      <div class="win-tagline">Skrzyżowanie X — wygrywasz!</div>
+      <div class="win-meta" id="win-meta">Wylosowano 0/75 kulek</div>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div class="win-results">
+      <div class="win-results-title">📊 WYNIKI KOŃCOWE — pozostało kul</div>
+      <div class="results-table" id="results-table"></div>
+    </div>
+
+    <!-- BALL SEQUENCE -->
+    <div class="win-balls">
+      <div class="win-balls-title">🎱 KOLEJNOŚĆ WYLOSOWANYCH KUL</div>
+      <div class="balls-sequence" id="balls-sequence"></div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="win-action-btns">
+      <button class="wbtn secondary" onclick="location.reload()">MENU</button>
+      <button class="wbtn csv" onclick="showConfig()">📋 POKAŻ CONFIG</button>
+      <button class="wbtn primary" onclick="restartGame()">NOWA GRA ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG POPUP -->
+<div id="config-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.2);border-radius:16px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;">📋 Config gry — zaznacz wszystko i skopiuj</span>
+      <button onclick="document.getElementById('config-popup').style.display='none'" style="background:rgba(255,255,255,0.1);border:none;color:white;font-size:18px;cursor:pointer;border-radius:8px;width:32px;height:32px;">✕</button>
+    </div>
+    <textarea id="config-text" readonly
+      style="flex:1;background:#0d0d1a;color:#e0e0e0;font-family:'Courier New',monospace;font-size:11px;padding:16px;border:none;outline:none;resize:none;line-height:1.6;overflow-y:auto;"
+    ></textarea>
+    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:10px;">
+      <button onclick="selectAllConfig()" style="flex:1;height:38px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;border-radius:10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">ZAZNACZ WSZYSTKO</button>
+      <button onclick="copyConfig()" style="flex:1;height:38px;background:linear-gradient(135deg,#00897b,#00695c);border:none;color:white;border-radius:10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;" id="copy-btn">KOPIUJ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTS ─────────────────────────────────────────────
+const X_IDX = [0, 4, 6, 8, 16, 18, 20, 24]; // X pattern indices (center 12 is FREE)
+const LETTERS = ['B','I','N','G','O'];
+const COL_RANGES = [[1,15],[16,30],[31,45],[46,60],[61,75]];
+
+const VILLAINS = [
+  { name: 'DarkQueen',  emoji: '🧛‍♀️', color: '#4a148c', bet: 'x40',  lvl: 84  },
+  { name: 'ShadowBet',  emoji: '🕷️',  color: '#1a237e', bet: 'x15',  lvl: 66  },
+  { name: 'BingoDevil', emoji: '😈',  color: '#b71c1c', bet: 'x1',   lvl: 100 },
+];
+
+// Scripted villain counters: [afterBall, remaining]
+const VILLAIN_SCRIPTS = [
+  // Villain 0 — DarkQueen x40
+  [[1,7],[3,6],[5,5],[8,4],[13,3],[15,2],[18,1]],
+  // Villain 1 — ShadowBet x15
+  [[3,7],[8,6],[12,5],[15,4],[18,3],[20,2]],
+  // Villain 2 — BingoDevil x1
+  [[10,7],[18,6]],
+];
+
+// Get scripted remaining for villain vi after `drawn` balls
+function scriptedRemaining(vi, drawn) {
+  const steps = VILLAIN_SCRIPTS[vi];
+  // Start at 8, decrease per script
+  let rem = 8;
+  for (const [afterBall, val] of steps) {
+    if (drawn >= afterBall) rem = val;
+    else break;
+  }
+  return rem;
+}
+
+// ─── STATE ────────────────────────────────────────────────
+let state = {
+  heroCards: [],
+  villains: [],
+  ballSeq: [],
+  ballsDrawn: 0,
+  calledNums: new Set(),
+  autoTimer: null,
+  gameOver: false,
+};
+
+// ─── CARD GENERATION ──────────────────────────────────────
+function generateCard() {
+  // col-major generation, stored row-major
+  const colNums = COL_RANGES.map(([lo, hi]) => {
+    const pool = [];
+    for (let n = lo; n <= hi; n++) pool.push(n);
+    pool.sort(() => Math.random() - 0.5);
+    return pool.slice(0, 5);
+  });
+  const grid = [];
+  for (let r = 0; r < 5; r++)
+    for (let c = 0; c < 5; c++)
+      grid.push(colNums[c][r]);
+  grid[12] = 'FREE';
+  return { numbers: grid, daubed: grid.map(n => n === 'FREE') };
+}
+
+function getXNums(card) {
+  return X_IDX.map(i => card.numbers[i]);
+}
+
+function remainingForCard(card) {
+  return X_IDX.filter(i => !card.daubed[i]).length;
+}
+
+// ─── HERO WIN CHECK ───────────────────────────────────────
+function checkHeroWinAtBall(cards, seq, ballCount) {
+  // Simulate daubing hero cards through ballCount balls
+  const daubed = cards.map(c => [...c.daubed]); // copy initial (all FREE pre-daubed)
+  for (let i = 0; i < ballCount; i++) {
+    const n = seq[i];
+    cards.forEach((card, ci) => {
+      card.numbers.forEach((num, idx) => {
+        if (num === n) daubed[ci][idx] = true;
+      });
+    });
+  }
+  return daubed.some(d => X_IDX.every(i => d[i]));
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Find sequence where hero wins exactly on ball N (20-24)
+function buildWinningSequence(heroCards) {
+  const all = Array.from({length: 75}, (_, i) => i + 1);
+  for (let attempt = 0; attempt < 5000; attempt++) {
+    const seq = shuffleArray(all);
+    // Find on which ball hero first wins
+    let winBall = -1;
+    const daubed = heroCards.map(c => c.numbers.map(n => n === 'FREE'));
+    for (let i = 0; i < seq.length; i++) {
+      const n = seq[i];
+      heroCards.forEach((card, ci) => {
+        card.numbers.forEach((num, idx) => {
+          if (num === n) daubed[ci][idx] = true;
+        });
+      });
+      if (daubed.some(d => X_IDX.every(idx => d[idx]))) {
+        winBall = i + 1; // 1-based
+        break;
+      }
+    }
+    if (winBall >= 20 && winBall <= 24) return seq;
+  }
+  // Fallback: just return a random sequence (shouldn't happen often)
+  return shuffleArray(all);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+function initGame() {
+  state.heroCards = Array.from({length: 20}, generateCard);
+  // Villains are display-only — no real cards
+  state.villains = VILLAINS.map(vd => ({ ...vd }));
+  state.ballsDrawn = 0;
+  state.calledNums = new Set();
+  state.gameOver = false;
+  if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
+
+  state.ballSeq = buildWinningSequence(state.heroCards);
+
+  renderVillains();
+  renderHeroGrid();
+  updateUI();
+}
+
+function restartGame() {
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('confetti-wrap').innerHTML = '';
+  document.getElementById('bingo-btn').classList.remove('active');
+  initGame();
+}
+
+// ─── BALL LOGIC ───────────────────────────────────────────
+function getBallLetter(n) {
+  for (let i = 0; i < 5; i++) {
+    const [lo, hi] = COL_RANGES[i];
+    if (n >= lo && n <= hi) return LETTERS[i];
+  }
+  return 'B';
+}
+
+function drawBall() {
+  if (state.gameOver || state.ballsDrawn >= state.ballSeq.length) return;
+
+  const n = state.ballSeq[state.ballsDrawn];
+  state.ballsDrawn++;
+  state.calledNums.add(n);
+
+  // Animate current ball
+  const letter = getBallLetter(n);
+  const cb = document.getElementById('cur-ball');
+  cb.className = `current-ball ball-${letter} ball-anim`;
+  document.getElementById('cur-l').textContent = letter;
+  document.getElementById('cur-n').textContent = n;
+  document.getElementById('bot-ball').textContent = letter;
+  document.getElementById('bot-ball').style.background =
+    {B:'#1565c0',I:'#e65100',N:'#1b5e20',G:'#b71c1c',O:'#4a148c'}[letter];
+
+  // Autodaub hero cards
+  let heroWon = false;
+  state.heroCards.forEach((card, ci) => {
+    card.numbers.forEach((num, idx) => {
+      if (num === n && !card.daubed[idx]) {
+        card.daubed[idx] = true;
+        // Flash cell
+        const el = document.getElementById(`hc-${ci}-${idx}`);
+        if (el) { el.classList.add('daubed', 'just-hit'); setTimeout(() => el.classList.remove('just-hit'), 450); }
+      }
+    });
+    if (remainingForCard(card) === 0 && !heroWon) heroWon = true;
+  });
+
+  // Scripted villain update handled in updateVillainRemaining()
+
+  // Update remaining + re-sort + check win
+  updateHeroRemaining();
+  sortAndRefreshHeroGrid();
+  updateVillainRemaining();
+  updateUI();
+
+  if (heroWon && !state.gameOver) {
+    state.gameOver = true;
+    if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
+    const at = document.getElementById('auto-btn');
+    at.textContent = 'AUTO ▶'; at.classList.remove('on');
+    highlightWinCells();
+    // Activate BINGO button
+    document.getElementById('bingo-btn').classList.add('active');
+  }
+}
+
+// ─── COLOR CLASS BY REMAINING ─────────────────────────────
+function rcClass(rem) {
+  if (rem === 0) return 'rc-pink';
+  if (rem <= 2)  return 'rc-red';
+  if (rem <= 4)  return 'rc-yellow';
+  if (rem <= 7)  return 'rc-blue';
+  return 'rc-green';
+}
+
+// ─── HERO GRID ────────────────────────────────────────────
+function renderHeroGrid() {
+  const grid = document.getElementById('hero-grid');
+  grid.innerHTML = '';
+  state.heroCards.forEach((card, ci) => {
+    const el = buildHeroCardEl(card, ci);
+    grid.appendChild(el);
+  });
+  sortAndRefreshHeroGrid();
+}
+
+function buildHeroCardEl(card, ci) {
+  const rem = remainingForCard(card);
+  const el = document.createElement('div');
+  el.className = `hero-card ${rcClass(rem)}`;
+  el.id = `hero-card-${ci}`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'hc-grid-wrap';
+
+  // Grid cells — NO header row
+  const g = document.createElement('div');
+  g.className = 'hc-grid';
+  card.numbers.forEach((num, idx) => {
+    const cell = document.createElement('div');
+    cell.id = `hc-${ci}-${idx}`;
+    const isX = X_IDX.includes(idx);
+    const isFree = num === 'FREE';
+    const isDaubed = card.daubed[idx];
+    let cls = 'hc-cell';
+    if (isFree) cls += ' free daubed';
+    else if (isDaubed) cls += ' daubed' + (isX ? ' xpat-cell' : '');
+    else cls += isX ? ' xpat-cell' : '';
+    cell.className = cls;
+    cell.textContent = isFree ? 'FREE' : num;
+    g.appendChild(cell);
+  });
+  wrap.appendChild(g);
+  el.appendChild(wrap);
+
+  // Footer
+  const footer = document.createElement('div');
+  footer.className = 'hc-footer';
+  const badge = document.createElement('div');
+  badge.id = `hc-rem-${ci}`;
+  badge.className = 'remains-badge';
+  badge.innerHTML = `Pozostało: <span>${rem}</span>`;
+  footer.appendChild(badge);
+  el.appendChild(footer);
+
+  return el;
+}
+
+function updateHeroRemaining() {
+  state.heroCards.forEach((card, ci) => {
+    const rem = remainingForCard(card);
+    // Refresh color class on card
+    const cardEl = document.getElementById(`hero-card-${ci}`);
+    if (cardEl) {
+      cardEl.classList.remove('rc-green','rc-blue','rc-yellow','rc-red','rc-pink');
+      cardEl.classList.add(rcClass(rem));
+    }
+    const badge = document.getElementById(`hc-rem-${ci}`);
+    if (badge) badge.innerHTML = `Pozostało: <span>${rem}</span>`;
+    // Update individual cells
+    card.numbers.forEach((num, idx) => {
+      const cell = document.getElementById(`hc-${ci}-${idx}`);
+      if (cell && card.daubed[idx] && !cell.classList.contains('daubed')) {
+        cell.classList.add('daubed');
+        if (X_IDX.includes(idx)) cell.classList.add('xpat-cell');
+      }
+    });
+  });
+}
+
+function sortAndRefreshHeroGrid() {
+  const grid = document.getElementById('hero-grid');
+  const cards = [...grid.children];
+  
+  // Get remaining for each card
+  const remMap = {};
+  state.heroCards.forEach((card, ci) => { remMap[ci] = remainingForCard(card); });
+  
+  // Sort DOM elements by remaining ascending
+  cards.sort((a, b) => {
+    const aId = parseInt(a.id.replace('hero-card-', ''));
+    const bId = parseInt(b.id.replace('hero-card-', ''));
+    return remMap[aId] - remMap[bId];
+  });
+  
+  // Re-append in sorted order
+  cards.forEach((card, rank) => {
+    card.classList.remove('best', 'rank2', 'rank3');
+    if (rank === 0) card.classList.add('best');
+    else if (rank === 1) card.classList.add('rank2');
+    else if (rank === 2) card.classList.add('rank3');
+    grid.appendChild(card);
+  });
+}
+
+function highlightWinCells() {
+  state.heroCards.forEach((card, ci) => {
+    if (remainingForCard(card) === 0) {
+      X_IDX.forEach(idx => {
+        const el = document.getElementById(`hc-${ci}-${idx}`);
+        if (el) el.classList.add('win-cell');
+      });
+      // Mark FREE too
+      const freeEl = document.getElementById(`hc-${ci}-12`);
+      if (freeEl) freeEl.classList.add('win-cell');
+      document.getElementById(`hero-card-${ci}`)?.classList.add('won-card');
+    }
+  });
+}
+
+// ─── VILLAINS (SCRIPTED) ──────────────────────────────────
+function renderVillains() {
+  const container = document.getElementById('villains-container');
+  container.innerHTML = '';
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '8px';
+
+  state.villains.forEach((v, vi) => {
+    const el = document.createElement('div');
+    el.className = 'villain-card';
+    el.id = `villain-${vi}`;
+    el.innerHTML = buildVillainHTML(v, vi, state.ballsDrawn);
+    container.appendChild(el);
+  });
+}
+
+function buildVillainHTML(v, vi, drawn) {
+  const rem = scriptedRemaining(vi, drawn);
+  const bgColors = { 'rc-green':'#388e3c','rc-blue':'#1976d2','rc-yellow':'#fbc02d','rc-red':'#d32f2f','rc-pink':'#e040a0' };
+  const textColors = { 'rc-green':'#fff','rc-blue':'#fff','rc-yellow':'#4a3000','rc-red':'#fff','rc-pink':'#fff' };
+  const rc = rcClass(rem);
+  return `
+    <div class="vill-top">
+      <div class="vill-avatar" style="background:${v.color}20;border:1px solid ${v.color}60">
+        <span class="lvl">${v.lvl}</span>
+        <span style="font-size:22px">${v.emoji}</span>
+      </div>
+      <div class="vill-info">
+        <div class="vill-name">${v.name}</div>
+        <div class="vill-bet">${v.bet}</div>
+        <div class="vill-remains" style="background:${bgColors[rc]};color:${textColors[rc]}">Pozostało: <span>${rem}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function updateVillainRemaining() {
+  state.villains.forEach((v, vi) => {
+    const el = document.getElementById(`villain-${vi}`);
+    if (!el) return;
+    const rem = scriptedRemaining(vi, state.ballsDrawn);
+    el.innerHTML = buildVillainHTML(v, vi, state.ballsDrawn);
+    el.classList.toggle('danger', rem <= 2);
+  });
+}
+
+// ─── UI UPDATE ────────────────────────────────────────────
+function updateUI() {
+  const drawn = state.ballsDrawn;
+  document.getElementById('drawn-cnt').textContent = drawn;
+  document.getElementById('bot-cnt').textContent = `${drawn}/75`;
+  
+  // Progress bar
+  const pct = (drawn / 75 * 100).toFixed(1);
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  // Stars (light up at 15, 30, 45, 60, 75)
+  const starEls = document.querySelectorAll('.star');
+  const thresholds = [15, 30, 45, 60, 75];
+  starEls.forEach((s, i) => {
+    s.classList.toggle('lit', drawn >= thresholds[i]);
+  });
+
+  // Draw button
+  document.getElementById('draw-btn').disabled = state.gameOver || drawn >= 75;
+}
+
+// ─── AUTO ─────────────────────────────────────────────────
+const SPEED_MS = 1200;
+
+function toggleAuto() {
+  const btn = document.getElementById('auto-btn');
+  if (state.autoTimer) {
+    clearInterval(state.autoTimer);
+    state.autoTimer = null;
+    btn.textContent = 'AUTO ▶';
+    btn.classList.remove('on');
+  } else {
+    btn.textContent = '⏸ STOP';
+    btn.classList.add('on');
+    state.autoTimer = setInterval(() => {
+      if (state.gameOver || state.ballsDrawn >= 75) {
+        clearInterval(state.autoTimer);
+        state.autoTimer = null;
+        btn.textContent = 'AUTO ▶';
+        btn.classList.remove('on');
+        return;
+      }
+      drawBall();
+    }, SPEED_MS);
+  }
+}
+
+// ─── BINGO CLAIM ──────────────────────────────────────────
+function claimBingo() {
+  document.getElementById('bingo-btn').classList.remove('active');
+  showWin();
+}
+
+// ─── WIN ──────────────────────────────────────────────────
+function showWin() {
+  // Meta
+  document.getElementById('win-meta').textContent = `Wylosowano ${state.ballsDrawn} z 75 kulek`;
+
+  // Results table
+  const table = document.getElementById('results-table');
+  table.innerHTML = '';
+
+  // Gather all players with their best remaining
+  const entries = [
+    { name: 'Ty (Hero)', emoji: '⭐', rem: Math.min(...state.heroCards.map(c => remainingForCard(c))), isHero: true },
+    ...state.villains.map((v, vi) => ({
+      name: v.name, emoji: v.emoji,
+      rem: scriptedRemaining(vi, state.ballsDrawn),
+      isHero: false,
+    })),
+  ];
+  entries.sort((a, b) => a.rem - b.rem);
+
+  const posCls = ['p1','p2','p3','pn','pn'];
+  entries.forEach((e, i) => {
+    const rc = rcClass(e.rem);
+    const bgColors = { 'rc-green':'#388e3c','rc-blue':'#1976d2','rc-yellow':'#fbc02d','rc-red':'#d32f2f','rc-pink':'#e040a0' };
+    const bg = bgColors[rc];
+    const row = document.createElement('div');
+    row.className = 'result-row' + (e.isHero ? ' hero-row' : '');
+    row.innerHTML = `
+      <div class="result-pos ${posCls[i] || 'pn'}">${i+1}</div>
+      <div class="result-avatar">${e.emoji}</div>
+      <div class="result-name">${e.name}</div>
+      <div class="result-rem" style="background:${bg};color:white">Pozostało: ${e.rem}</div>
+    `;
+    table.appendChild(row);
+  });
+
+  // Ball sequence
+  const seq = document.getElementById('balls-sequence');
+  seq.innerHTML = '';
+  const winningNums = new Set();
+  state.heroCards.forEach(card => {
+    if (remainingForCard(card) === 0) {
+      X_IDX.forEach(i => { if (card.numbers[i] !== 'FREE') winningNums.add(card.numbers[i]); });
+    }
+  });
+
+  state.ballSeq.slice(0, state.ballsDrawn).forEach(n => {
+    const l = getBallLetter(n);
+    const ball = document.createElement('div');
+    ball.className = `seq-ball sb-${l}${winningNums.has(n) ? ' winning-ball' : ''}`;
+    ball.textContent = n;
+    seq.appendChild(ball);
+  });
+
+  spawnConfetti();
+  // Stagger overlay appearance
+  setTimeout(() => {
+    document.getElementById('win-overlay').classList.add('show');
+  }, 200);
+}
+
+function spawnConfetti() {
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.innerHTML = '';
+  const colors = ['#ffd54f','#e040a0','#00e676','#00d4ff','#ff9800','#ce93d8','#80deea','#ef9a9a','#ffffff'];
+  for (let i = 0; i < 160; i++) {
+    const p = document.createElement('div');
+    p.className = 'cp';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 12;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.borderRadius = Math.random() > 0.4 ? '50%' : '2px';
+    p.style.animationDuration = (2 + Math.random() * 3) + 's';
+    p.style.animationDelay = (Math.random() * 2) + 's';
+    wrap.appendChild(p);
+  }
+}
+
+// ─── CONFIG POPUP ─────────────────────────────────────────
+function showConfig() {
+  const lines = [];
+
+  lines.push('=== KOLEJNOSC KUL ===');
+  lines.push('Nr; Numer');
+  state.ballSeq.slice(0, state.ballsDrawn).forEach((n, i) => {
+    lines.push(`${i+1}; ${n}`);
+  });
+
+  lines.push('');
+  lines.push('=== KUPONY HERO (20 kart) ===');
+  state.heroCards.forEach((card, ci) => {
+    const nums = card.numbers.map(n => n === 'FREE' ? 'FREE' : n).join(', ');
+    lines.push(`karta${ci+1}: ${nums}`);
+  });
+
+  document.getElementById('config-text').value = lines.join('\n');
+  document.getElementById('config-popup').style.display = 'flex';
+}
+
+function selectAllConfig() {
+  const ta = document.getElementById('config-text');
+  ta.focus();
+  ta.select();
+}
+
+function copyConfig() {
+  const ta = document.getElementById('config-text');
+  ta.select();
+  try {
+    document.execCommand('copy');
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ SKOPIOWANO!';
+    setTimeout(() => { btn.textContent = 'KOPIUJ'; }, 2000);
+  } catch(e) {}
+}
+
+// ─── START ────────────────────────────────────────────────
+initGame();
+</script>
+</body>
+</html>
